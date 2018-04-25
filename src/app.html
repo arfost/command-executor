@@ -1,0 +1,204 @@
+<link rel="import" href="../lib/polymer/polymer.html">
+<link rel="import" href="../lib/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../lib/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../lib/app-layout/app-header/app-header.html">
+<link rel="import" href="../lib/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../lib/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../lib/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../lib/app-route/app-location.html">
+<link rel="import" href="../lib/app-route/app-route.html">
+<link rel="import" href="../lib/iron-pages/iron-pages.html">
+<link rel="import" href="../lib/iron-selector/iron-selector.html">
+<link rel="import" href="../lib/paper-icon-button/paper-icon-button.html">
+
+<!-- Views -->
+<link rel="import" href="views/view-commands.html">
+
+<dom-module id="commmand-app">
+  <template>
+    <style>
+      :host {
+        --app-primary-color: #4285f4;
+        --app-secondary-color: rgb(168, 168, 168);
+        --app-tertiary-color: rgb(238, 238, 238);
+        --app-title-color: black;
+        --app-text-color: rgb(49, 49, 49);
+        display: block;
+        color: var(--app-text-color);
+        background-color: var(--app-secondary-color);
+        padding-top: 5em;
+      }
+
+      .drawer-list {
+        margin: 0 20px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .drawer-list a {
+        display: block;
+        padding: 0 16px;
+        text-decoration: none;
+        color: var(--app-text-color);
+        line-height: 40px;
+
+        border-style: solid;
+        border-width: 0 1px 0 1px;
+        border-color: black;
+      }
+
+      .drawer-list a.iron-selected {
+        color: var(--app-title-color);
+        font-weight: bold;
+      }
+
+      iron-pages {
+        overflow: hidden;
+      }
+
+      .title {
+        position: fixed;
+        width: 100%;
+        height: 5em;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--app-title-color);
+        background-color: var(--app-primary-color);
+        top: 0;
+        z-index: 10;
+      }
+
+      .context-box {
+        display: flex;
+        justify-content: space-between;
+        padding: 3em;
+      }
+
+      .context-box>paper-button {
+        background: var(--app-primary-color)
+      }
+
+      .no-context {
+        color: red
+      }
+
+      .page{
+        margin: 24px;
+        padding: 16px;
+        border-radius: 5px;
+        background-color: var(--app-tertiary-color);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      .page > h3{
+        color: var(--app-title-color);
+      }
+    </style>
+
+    <app-location use-hash-as-path route="{{route}}"></app-location>
+    <app-route route="{{route}}" pattern="/:page" data="{{routeData}}"></app-route>
+    <div class="title">
+      <h1>
+        Command Executor
+
+      </h1>
+      <h3>
+        <[[page]]>
+      </h3>
+    </div>
+
+    <div class="context-box">
+      <input on-change="applyContext" hidden id="contextInput" type="file" webkitdirectory/>
+      <div class="context-remind">context :
+        <span hidden="[[!context]]">[[context]]</span>
+        <span hidden="[[context]]" class="no-context">Please choose a context before executing commands</span>
+      </div>
+      <paper-button on-tap="setContext" raised elevation="3" class="context-button">choose context</paper-button>
+    </div>
+    <div>
+      <div>
+        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+          <template is="dom-repeat" items="{{commandSet}}" as="set">
+            <a name="[[set.name]]" href="#/[[set.name]]">Command set [[set.name]]</a>
+          </template>
+        </iron-selector>
+      </div>
+      <div>
+        <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
+          <div name="acceuil" class="page">
+            <h3>
+              Bienvenu sur command executor
+            </h3>
+            <p>
+              Ceci est une rapide preuve de concept pour command executor, un petit utilitaire dont le but est de faciliter l'execution
+              de command console.
+            </p>
+            <p>
+              L'utilisation est simple, le logiciel utilise un fichier JSON contenant la description de différents set de commandes, leurs
+              parametres et il genere une interface facilitant l'execution de ces commandes.
+            </p>
+            <p>
+              Il faut aussi choisir un contexte pour les commandes, il s'agit du dossier dans lequel la commande sera lancée.
+            </p>
+          </div>
+          <div name="view404" class="page">
+            erreur
+          </div>
+          <template is="dom-repeat" items="{{commandSet}}" as="set">
+            <view-commands set="[[set]]" name="[[set.name]]" context="[[context]]"></view-commands>
+          </template>
+        </iron-pages>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    var _ = require('lodash');
+    const remote = require('electron').remote;
+
+    class CommmandApp extends Polymer.Element {
+      static get is() { return 'commmand-app' }
+      static get properties() {
+        return {
+          page: {
+            type: String
+          },
+          context: {
+            type: String,
+            value: ""
+          },
+          commandSet: {
+            type: Array
+          }
+        }
+      }
+      static get observers() {
+        return [
+          '_routePageChanged(routeData.page)'
+        ]
+      }
+
+      ready() {
+        super.ready();
+        // Apply a default route, but make sure refresh works.
+        window.location.hash = window.location.hash || "#/acceuil";
+
+        this.commandSet = require('./config.json')
+      }
+
+      setContext() {
+        let test = this.$.contextInput.click()
+      }
+
+      applyContext() {
+        this.context = this.$.contextInput.files[0].path;
+      }
+
+      _routePageChanged(p) {
+        this.page = p;
+      }
+    }
+    customElements.define(CommmandApp.is, CommmandApp);
+  </script>
+</dom-module>

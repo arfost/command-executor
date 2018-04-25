@@ -1,0 +1,222 @@
+[
+    {
+        "name":"git 01",
+        "commands":[
+            {
+                "name":"clone",
+                "command":"git",
+                "params":[
+                    {
+                        "name":"clone",
+                        "desc":"tell git to clone a repo",
+                        "type":"fixed",
+                        "value":"clone"
+                    },
+                    {
+                        "name":"progress",
+                        "desc":"tell git to show progress even if not connected to a TTY",
+                        "type":"fixed",
+                        "value":"--progress"
+                    },
+                    {
+                        "name":"repo",
+                        "desc":"url of the repo to clone",
+                        "type":"prompt",
+                        "question":"repo ?"
+                    }
+                ]
+            },
+            {
+                "name":"new branch",
+                "command":"git",
+                "params":[
+                    {
+                        "name":"checkout",
+                        "desc":"tell git to checkout branch",
+                        "type":"fixed",
+                        "value":"checkout"
+                    },
+                    {
+                        "name":"new",
+                        "desc":"we create a new branch",
+                        "type":"fixed",
+                        "value":"-b"
+                    },
+                    {
+                        "name":"name",
+                        "desc":"name of the new branch",
+                        "type":"prompt",
+                        "question":"branch name ?"
+                    }
+                ]
+            },
+            {
+                "name":"switch branch",
+                "command":"git",
+                "params":[
+                    {
+                        "name":"checkout",
+                        "desc":"tell git to checkout branch",
+                        "type":"fixed",
+                        "value":"checkout"
+                    },
+                    {
+                        "name":"name",
+                        "desc":"name of the new branch",
+                        "type":"prompt",
+                        "question":"branch name ?"
+                    }
+                ]
+            },
+            {
+                "name":"status",
+                "command":"git",
+                "params":[
+                    {
+                        "name":"status",
+                        "desc":"aff files stats",
+                        "type":"fixed",
+                        "value":"status"
+                    }
+                ]
+            },
+            {
+                "name":"add",
+                "command":"git",
+                "params":[
+                    {
+                        "name":"add",
+                        "desc":"stage files for commit",
+                        "type":"fixed",
+                        "value":"add"
+                    },
+                    {
+                        "name":"all",
+                        "desc":"all modified files",
+                        "type":"fixed",
+                        "value":"-A"
+                    }
+                ]
+            },
+            {
+                "name":"commit",
+                "command":"git",
+                "params":[
+                    {
+                        "name":"commit",
+                        "desc":"commit changes",
+                        "type":"fixed",
+                        "value":"add"
+                    },
+                    {
+                        "name":"-m",
+                        "desc":"message",
+                        "type":"fixed",
+                        "value":"-m"
+                    },
+                    {
+                        "name":"message text",
+                        "desc":"message",
+                        "type":"prompt",
+                        "question":"commit message"
+                    }
+                ]
+            },
+            {
+                "name":"pull",
+                "command":"git",
+                "params":[
+                    {
+                        "name":"pull",
+                        "desc":"push changes",
+                        "type":"fixed",
+                        "value":"push"
+                    },
+                    {
+                        "name":"remote",
+                        "desc":"fixed origin remote",
+                        "type":"fixed",
+                        "value":"origin"
+                    },
+                    {
+                        "name":"branch",
+                        "desc":"branch",
+                        "type":"prompt",
+                        "question":"branch to push"
+                    }
+                ]
+            },
+            {
+                "name":"push",
+                "command":"git",
+                "params":[
+                    {
+                        "name":"push",
+                        "desc":"push changes",
+                        "type":"fixed",
+                        "value":"push"
+                    },
+                    {
+                        "name":"remote",
+                        "desc":"fixed origin remote",
+                        "type":"fixed",
+                        "value":"origin"
+                    },
+                    {
+                        "name":"branch",
+                        "desc":"branch",
+                        "type":"prompt",
+                        "question":"branch to push"
+                    }
+                ]
+            },
+            {
+                "name":"fetch",
+                "command":"git",
+                "params":[
+                    {
+                        "name":"fetch",
+                        "desc":"fetch changes",
+                        "type":"fixed",
+                        "value":"fetch"
+                    },
+                    {
+                        "name":"remote",
+                        "desc":"fixed origin remote",
+                        "type":"fixed",
+                        "value":"origin"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name":"project init",
+        "commands":[
+            {
+                "name":"npm",
+                "command":"npm",
+                "params":[
+                    {
+                        "name":"install",
+                        "desc":"tell npm to add alls dependencies",
+                        "type":"fixed",
+                        "value":"install"
+                    }
+                ]
+            },
+            {
+                "name":"bower",
+                "command":"bower",
+                "params":[
+                    {
+                        "name":"install",
+                        "desc":"tell bower to add alls dependencies",
+                        "type":"fixed",
+                        "value":"install"
+                    }
+                ]
+            }
+        ]
+    }
+]

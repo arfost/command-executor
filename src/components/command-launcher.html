@@ -1,0 +1,222 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+
+<link rel="import" href="../../lib/paper-button/paper-button.html">
+<link rel="import" href="../../lib/paper-input/paper-input.html">
+<!--
+    This is simply an href-like element that opens the given href in the
+    system's default browser, instead of in the Electron shell.
+-->
+<dom-module id="command-launcher">
+  <template>
+    <style>
+      .out {
+        color: var(--app-text-color);
+        padding: 0.5em;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        max-height: 25vh;
+        overflow-y: scroll;
+      }
+
+      .out:empty {
+        display:none;
+      }
+
+      .launching {
+        background-color: #fb9900
+      }
+
+      .ko {
+        background-color: #af2727
+      }
+
+      .ok {
+        background-color: #55c02b
+      }
+
+      .prompt {
+        background-color: var(--app-secondary-color);
+        padding: 16px;
+        position: fixed;
+        width: 50%;
+        left: 25%;
+        top: 25%;
+        box-shadow: 0 5px 5px 0 rgba(0, 0, 0, 0.14), 0 4px 8px 0 rgba(0, 0, 0, 0.12), 0 6px 4px -5px rgba(0, 0, 0, 0.2);
+        border: 2px solid var(--app-primary-color)
+      }
+
+      .command-box {
+        margin: 24px;
+        padding: 16px;
+        color: var(--app-text-color);
+        border-radius: 5px;
+        background-color: var(--app-tertiary-color);
+        ;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      .name {
+        color: var(--app-title-color);
+      }
+
+      .param-container {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.1em;
+        padding-right: 5em;
+      }
+
+      .param-name {
+        color: var(--app-title-color);
+      }
+
+      .param-desc {
+        padding-left: 1em;
+        font-style: italic;
+      }
+
+      .name-desc-box {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .button-container{
+        display: flex;
+        justify-content: flex-end;
+        padding-right: 5em;
+        margin-bottom: 1em;
+      }
+
+      .button-container > paper-button{
+        background: var(--app-primary-color)
+      }
+    </style>
+    <div class="command-box">
+      <h3 class="name">[[command.name]]</h3>
+      <template is="dom-repeat" items="{{command.params}}" as="param">
+        <div class="param-container">
+          <div class="name-desc-box">
+            <span class="param-name">[[param.name]] </span>
+            <span class="param-desc">[[param.desc]]</span>
+          </div>
+          <div>
+            type : [[_paramItemType(param)]]
+          </div>
+        </div>
+      </template>
+      <div class="button-container">
+        <paper-button raised elevation="3" on-click="backgroundProcess">
+          launch
+        </paper-button>
+      </div>
+      <div id="commandOut" class$="out [[status]]" inner-h-t-m-l="[[out]]">
+      </div>
+    </div>
+    <div class="prompt" hidden="[[!showPrompt]]">
+      <paper-input id="promptValue" label="[[question]]" value="{{addURL}}"></paper-input>
+      <paper-button class="add" on-click="closePrompt">Add</paper-button>
+    </div>
+  </template>
+
+  <script>
+    const { shell } = require('electron');
+
+    class CommandLauncher extends Polymer.Element {
+      static get is() { return 'command-launcher' }
+
+      static get properties() {
+        return {
+          context: {
+            type: String
+          },
+          command: {
+            type: Object
+          },
+          status: {
+            type: String
+          },
+          out: {
+            type: String,
+            value: ''
+          },
+          question: {
+            type: String,
+            value: ''
+          },
+          showPrompt: {
+            type: Boolean,
+            value: false
+          },
+          promptResolve: {
+            type: Object
+          }
+        }
+      }
+
+      async backgroundProcess() {
+        this.status = 'launching'
+        this.out = `<div>context : ${this.context}</div><div>command : </div>`;
+        const process = require('child_process');   // The power of Node.JS
+        let formattedParams = [];
+        for (let param of this.command.params) {
+          switch (param.type) {
+            case 'fixed':
+              formattedParams.push(param.value);
+              break;
+            case 'prompt':
+              formattedParams.push(await this.prompt(param.question));
+              break;
+            default:
+              throw new Error('Parameter type not recognized')
+          }
+        }
+
+        this.out = `<div><b>command : ${this.command.command} ${formattedParams.join(" ")}</b></div>`;
+        // var ls = process.spawn('ls', ['-l']);
+        var ls = process.spawn(this.command.command, formattedParams, { cwd: this.context });
+
+        ls.stdout.on('data', (data) => {
+          this.out += '<div>' + data + '</div>';
+        });
+
+        ls.stderr.on('data', (data) => {
+          this.out += '<div>' + data + '</div>';
+        });
+
+        ls.on('close', (code) => {
+          if (code == 0) {
+            this.status = 'ok';
+          }
+          else {
+            this.out += '<div>exit code: ' + code + '</div>';
+            this.status = 'ko';
+          }
+        });
+      }
+
+      prompt(question) {
+        return new Promise((res, rej) => {
+          this.question = question;
+          this.showPrompt = true;
+          this.promptResolve = res;
+        })
+      }
+
+      closePrompt() {
+        let res = this.promptResolve;
+        this.promptResolve = undefined;
+        this.showPrompt = false;
+        res(this.$.promptValue.value)
+      }
+
+      _paramItemType(item) {
+        switch (item.type) {
+          case 'fixed': return `fixed : (${item.value})`;
+          case 'prompt': return `prompt`;
+          default: return item.type;
+        }
+      }
+    }
+
+    customElements.define(CommandLauncher.is, CommandLauncher);
+  </script>
+</dom-module>

@@ -1,0 +1,49 @@
+<link rel="import" href="../../lib/polymer/polymer.html">
+<link rel="import" href="../../lib/iron-list/iron-list.html">
+<link rel="import" href="../../lib/paper-item/paper-item.html">
+<link rel="import" href="../components/command-launcher.html">
+
+<dom-module id="view-commands">
+  <template>
+    <style>
+      h1 {
+        margin: 16px 0;
+        color: var(--app-title-color);;
+        font-size: 22px;
+      }
+      .set-view{
+        padding: 1em;
+      }
+    </style>
+    <div class="set-view">
+      <h1>[[set.name]]</h1>
+      <template is="dom-repeat" items="{{set.commands}}" as="command">
+        <command-launcher class="command-launcher" command="[[command]]" context="[[context]]">
+        </command-launcher>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    class ViewCommands extends Polymer.Element {
+      static get is() { return 'view-commands' }
+
+      static get properties() {
+        return {
+          set: {
+            type: Object
+          },
+          context: {
+            type: String
+          }
+        }
+      }
+
+      closeClick() {
+        console.log('crouto')
+      }
+    }
+
+    customElements.define(ViewCommands.is, ViewCommands);
+  </script>
+</dom-module>

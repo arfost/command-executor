@@ -1,0 +1,30 @@
+{
+  "name": "command-executor",
+  "version": "0.1.0",
+  "description": "A command executor",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager ."
+  },
+  "repository": "https://github.com/arfost/command-executor",
+  "keywords": [
+    "Electron",
+    "Polymer",
+    "command line"
+  ],
+  "author": "arfost",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "~1.6.2",
+    "electron-packager": "^8.6.0",
+    "eslint": "^3.12.0",
+    "eslint-config-google": "^0.7.1",
+    "eslint-plugin-html": "^1.7.0"
+  },
+  "dependencies": {
+    "async": "^2.3.0",
+    "lodash": "^4.17.4",
+    "rss-parser": "^2.6.1"
+  }
+}
